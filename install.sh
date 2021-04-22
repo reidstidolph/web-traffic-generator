@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 cp ./traffgen.js /usr/bin/traffgen
-cp ./web-traffic-gen.servic /etc/systemd/system
+cp ./web-traffic-gen.service /etc/systemd/system
