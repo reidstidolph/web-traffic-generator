@@ -62,7 +62,7 @@ class WebProcess {
       setTimeout(() => {
         if (this.processRunning === true) {
           console.log(`killing '${website}'page load process.`)
-          this.childProcess.kill('SIGHUP')
+          this.childProcess.kill('SIGINT')
         }
   
       }, pageLoadTimeout)
