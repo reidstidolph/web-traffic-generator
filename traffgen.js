@@ -16,7 +16,7 @@ const processes = {}
 const { spawn } = require('child_process')
 
 // import URL list
-const websites = require('./urls.json')
+const websites = require('/var/lib/web-traffic-gen/urls.json')
 
 // function for returning random number
 function getRandomNum(min, max) {
