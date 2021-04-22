@@ -4,8 +4,8 @@
 
 const browser = '/opt/google/chrome/chrome'
 const browserArgs = ['--headless', '--disable-gpu']
-const minPageLoadInterval = 1000 // 1s
-const maxPageLoadInterval = 20000 // 20s
+const minPageLoadInterval = 500 // .5s
+const maxPageLoadInterval = 5000 // 5s
 const pageLoadTimeout = 10000 // 10s
 let initialized = false
 
