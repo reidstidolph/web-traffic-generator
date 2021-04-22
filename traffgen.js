@@ -7,7 +7,9 @@ const browserArgs = ['--headless', '--disable-gpu']
 const minPageLoadInterval = 500 // .5s
 const maxPageLoadInterval = 5000 // 5s
 const pageLoadTimeout = 10000 // 10s
-let initialized = false
+const maxSimultaneousProcesses = 3
+let processIterator = 0
+const processes = {}
 
 // import native modules
 const { spawn } = require('child_process')
@@ -29,46 +31,51 @@ function launchBrowser(website) {
 
 }
 
-function begin () {
+// constructor for spawning new web processes
+class WebProcess {
 
-  let delay
+  constructor (website) {
+    this.delay = getRandomNum(minPageLoadInterval, maxPageLoadInterval)
+    this.website = website
+    this.childProcess = null
+    this.processRunning = false
+    this.delay = getRandomNum(minPageLoadInterval, maxPageLoadInterval)
+    this.id = processIterator
 
-  if (initialized === false) {
-    delay = 0
-    initialized = true
-  } else {
-    delay = getRandomNum(minPageLoadInterval, maxPageLoadInterval)
-    console.log(`waiting ${delay} ms...`)
-  }
+    processIterator++
 
+    setTimeout(()=>{
+
+      this.childProcess = launchBrowser(website)
+      this.processRunning = true
   
-  let website = websites[getRandomNum(0, websites.length)]
-  let processRunning = false
-
-  setTimeout(()=>{
-
-    let pageLoad = launchBrowser(website)
-    processRunning = true
-
-    pageLoad.on('exit', code => {
-      console.log(`page load '${website}' process exited, return code '${code}'.`)
-      processRunning = false
-      begin()
-    })
-
-    // kill page if it has not closed after timeout
-
-    setTimeout(() => {
-      if (processRunning === true) {
-        console.log(`killing '${website}'page load process.`)
-        pageLoad.kill('SIGKILL')
-      }
-
-    }, pageLoadTimeout)
-
-  }, delay)
-
+      this.childProcess.on('exit', code => {
+        console.log(`page load '${website}' process exited, return code '${code}'.`)
+        this.processRunning = false
+        // cleanup
+        delete processes[this.id]
+        queueProcesses()
+      })
+  
+      // kill page if it has not closed after timeout
+  
+      setTimeout(() => {
+        if (this.processRunning === true) {
+          console.log(`killing '${website}'page load process.`)
+          this.childProcess.kill('SIGHUP')
+        }
+  
+      }, pageLoadTimeout)
+  
+    }, this.delay)
+  }
 }
 
-console.log('starting web traffic generation...')
-begin()
+function queueProcesses () {
+
+  while (Object.keys(processes).length < maxSimultaneousProcesses) {
+    processes[processIterator] = new WebProcess(websites[getRandomNum(0, websites.length)])
+  }
+}
+
+queueProcesses()
