@@ -2,6 +2,7 @@
 Description=generation of web traffic
 
 [Service]
+User=webtrafficgen
 TimeoutStartSec=0
 ExecStart=/usr/bin/traffgen
 Restart=always
